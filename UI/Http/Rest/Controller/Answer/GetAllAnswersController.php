@@ -6,6 +6,8 @@ use App\Answer\Application\AnswerResponse;
 use App\Answer\Infrastructure\Client\Endpoint\GetAnswers;
 use App\Shared\Domain\Client\ClientInterface;
 use Assert\Assertion;
+use Assert\InvalidArgumentException;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,25 +51,29 @@ readonly class GetAllAnswersController
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $order = $request->get('order');
-        $sort = $request->get('sort');
-        $site = $request->get('site');
-        $filter = $request->get('filter') ?? null;
+        try {
 
-        Assertion::notEmpty($order, '<order> can not be empty.');
-        Assertion::notEmpty($sort, '<sort> can not be empty.');
-        Assertion::notEmpty($site, '<site> can not be empty.');
+            $order = $request->get('order');
+            $sort = $request->get('sort');
+            $site = $request->get('site');
+            $filter = $request->get('filter') ?? null;
 
+            Assertion::notEmpty($order, '<order> can not be empty.');
+            Assertion::notEmpty($sort, '<sort> can not be empty.');
+            Assertion::notEmpty($site, '<site> can not be empty.');
 
-        $result = $this->client->request(new GetAnswers($order, $sort, $site, $filter));
+            $result = $this->client->request(new GetAnswers($order, $sort, $site, $filter));
 
-        $response = array_map(function (array $answer) {
-            return new AnswerResponse(
-                $answer['answer_id'],
-                $answer['body'] ?? null
-            );
-        }, $result['items']);
+            $response = array_map(function (array $answer) {
+                return new AnswerResponse(
+                    $answer['answer_id'],
+                    $answer['body'] ?? null
+                );
+            }, $result['items']);
 
-        return new JsonResponse($response, Response::HTTP_OK, []);
+            return new JsonResponse($response, Response::HTTP_OK, []);
+        } catch (InvalidArgumentException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
     }
 }
