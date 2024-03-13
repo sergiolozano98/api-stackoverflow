@@ -1,0 +1,5 @@
+controllers:
+    resource:
+        path: ../src/UI/Http/Rest/Controller
+        namespace: UI/Http/Rest/Controller
+    type: attribute
