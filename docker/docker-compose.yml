@@ -1,0 +1,31 @@
+version: '3'
+name: api-stackoverflow
+services:
+  php:
+    build:
+      context: ./php
+      dockerfile: ./Dockerfile
+      args:
+        TIMEZONE: 'Europe/Madrid'
+    environment:
+      APP_ENV: dev
+      XDEBUG_CLIENT_HOST: host.docker.internal
+      XDEBUG_CLIENT_PORT: 9000
+      PHP_IDE_CONFIG: serverName=localhost
+    volumes:
+      - ../:/var/www/
+    networks:
+      - api-stackoverflow-network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: ./Dockerfile
+    volumes:
+      - ../:/var/www/
+    ports:
+      - '8080:80'
+    networks:
+      - api-stackoverflow-network
+networks:
+  api-stackoverflow-network:
