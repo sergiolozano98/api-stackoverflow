@@ -32,7 +32,7 @@ class GetAnswers implements EndpointInterface
     {
         return [
             'headers' => [
-                'Content-Type' => 'text/json',
+                'Content-Type' => 'application/json',
             ],
             'query' => [
                 'order' => $this->order,
