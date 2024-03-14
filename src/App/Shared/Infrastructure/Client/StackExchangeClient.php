@@ -16,6 +16,9 @@ readonly class StackExchangeClient implements ClientInterface
     {
     }
 
+    /**
+     * @throws ClientException
+     */
     public function request(EndpointInterface $endpoint)
     {
         try {
