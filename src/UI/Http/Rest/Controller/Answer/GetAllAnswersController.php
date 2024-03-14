@@ -7,12 +7,11 @@ use App\Answer\Infrastructure\Client\Endpoint\GetAnswers;
 use App\Shared\Domain\Client\ClientInterface;
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
-use Symfony\Component\Config\Definition\Exception\Exception;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use OpenApi\Attributes as OA;
 
 readonly class GetAllAnswersController
 {

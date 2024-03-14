@@ -1,6 +1,6 @@
 controllers:
     resource:
-        path: ../UI/Http/Rest/Controller
+        path: ../src/UI/Http/Rest/Controller
         namespace: UI\Http\Rest\Controller\
     type: attribute
 
