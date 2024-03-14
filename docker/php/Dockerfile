@@ -1,6 +1,6 @@
 FROM php:8.3-fpm-bullseye
 ARG TIMEZONE='Europe/Madrid'
-ARG XDEBUG=false
+ARG XDEBUG=true
 
 COPY php.ini /usr/local/etc/php/conf.d/docker-php-config.ini
 
