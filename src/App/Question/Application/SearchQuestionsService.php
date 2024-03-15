@@ -7,7 +7,7 @@ use App\Shared\Domain\Client\EndpointInterface;
 
 class SearchQuestionsService
 {
-    public function __construct(private ClientInterface $client)
+    public function __construct(private readonly ClientInterface $client)
     {
     }
 
