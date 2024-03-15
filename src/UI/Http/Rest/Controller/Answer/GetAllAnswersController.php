@@ -31,13 +31,13 @@ readonly class GetAllAnswersController
     )]
     #[OA\Parameter(
         name: 'sort',
-        description: 'The field used specify order',
+        description: 'The field used specify order (ex: activity)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
     #[OA\Parameter(
         name: 'site',
-        description: 'The specify site of data',
+        description: 'The specify site of data (ex: stackoverflow)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]

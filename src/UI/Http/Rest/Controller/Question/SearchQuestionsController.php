@@ -2,10 +2,8 @@
 
 namespace UI\Http\Rest\Controller\Question;
 
-use App\Question\Application\QuestionResponse;
 use App\Question\Application\SearchQuestionsService;
 use App\Question\Infrastructure\Client\Endpoint\SearchQuestion;
-use App\Shared\Domain\Client\ClientInterface;
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
 use OpenApi\Attributes as OA;
@@ -22,24 +20,24 @@ readonly class SearchQuestionsController
 
     #[Route('/api/questions', name: 'search_questions', methods: ['GET'])]
     #[OA\Get(
-        path: "/api/question",
+        path: "/api/questions",
         summary: "search based by title.",
     )]
     #[OA\Parameter(
         name: 'order',
-        description: 'Specify order (desc, asc)',
+        description: 'Specify order (ex: desc, asc)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
     #[OA\Parameter(
         name: 'sort',
-        description: 'The field used specify order',
+        description: 'The field used specify order (ex: activity)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
     #[OA\Parameter(
         name: 'site',
-        description: 'The specify site of data',
+        description: 'The specify site of data (ex: stackoverflow)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
