@@ -3,6 +3,7 @@
 namespace UI\Http\Rest\Controller\Question;
 
 use App\Question\Application\QuestionResponse;
+use App\Question\Application\SearchQuestionsService;
 use App\Question\Infrastructure\Client\Endpoint\SearchQuestion;
 use App\Shared\Domain\Client\ClientInterface;
 use Assert\Assertion;
@@ -15,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 readonly class SearchQuestionsController
 {
-    public function __construct(private ClientInterface $client)
+    public function __construct(private SearchQuestionsService $service)
     {
     }
 
@@ -63,16 +64,9 @@ readonly class SearchQuestionsController
             Assertion::notEmpty($title, '<title> can not be empty.');
 
 
-            $result = $this->client->request(new SearchQuestion($order, $sort, $site, $title));
+            $result = $this->service->__invoke(new SearchQuestion($order, $sort, $site, $title));
 
-            $response = array_map(function (array $answer) {
-                return new QuestionResponse(
-                    $answer['question_id'],
-                    $answer['title']
-                );
-            }, $result['items']);
-
-            return new JsonResponse($response, Response::HTTP_OK, []);
+            return new JsonResponse($result, Response::HTTP_OK, []);
         } catch (InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }

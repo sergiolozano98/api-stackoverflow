@@ -2,9 +2,8 @@
 
 namespace UI\Http\Rest\Controller\Answer;
 
-use App\Answer\Application\AnswerResponse;
+use App\Answer\Application\GetAnswersService;
 use App\Answer\Infrastructure\Client\Endpoint\GetAnswers;
-use App\Shared\Domain\Client\ClientInterface;
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
 use OpenApi\Attributes as OA;
@@ -15,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 readonly class GetAllAnswersController
 {
-    public function __construct(private ClientInterface $client)
+    public function __construct(private GetAnswersService $service)
     {
     }
 
@@ -61,16 +60,9 @@ readonly class GetAllAnswersController
             Assertion::notEmpty($sort, '<sort> can not be empty.');
             Assertion::notEmpty($site, '<site> can not be empty.');
 
-            $result = $this->client->request(new GetAnswers($order, $sort, $site, $filter));
+            $result = $this->service->__invoke(new GetAnswers($order, $sort, $site, $filter));
 
-            $response = array_map(function (array $answer) {
-                return new AnswerResponse(
-                    $answer['answer_id'],
-                    $answer['body'] ?? null
-                );
-            }, $result['items']);
-
-            return new JsonResponse($response, Response::HTTP_OK, []);
+            return new JsonResponse($result, Response::HTTP_OK, []);
         } catch (InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
