@@ -15,4 +15,4 @@
 ###< phpunit/phpunit ###
 /coverage
 
-.idea
+.idea/

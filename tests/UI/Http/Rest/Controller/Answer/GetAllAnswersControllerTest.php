@@ -2,7 +2,8 @@
 
 namespace App\Tests\UI\Http\Rest\Controller\Answer;
 
-use App\Shared\Domain\Client\ClientInterface;
+use App\Answer\Application\AnswerResponse;
+use App\Answer\Application\GetAnswersService;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -10,16 +11,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class GetAllAnswersControllerTest extends WebTestCase
 {
+    private GetAnswersService|MockObject $service;
+
     private KernelBrowser $client;
-    private ClientInterface|MockObject $clientServiceMock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->service = $this->getMockBuilder(GetAnswersService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->client = static::createClient(['environment' => 'test']);
-        $this->clientServiceMock = $this->createMock(ClientInterface::class);
-        $this->client->getContainer()->set(ClientInterface::class, $this->clientServiceMock);
+        $this->client->getContainer()->set(GetAnswersService::class, $this->service);
     }
 
     /**
@@ -27,20 +32,20 @@ class GetAllAnswersControllerTest extends WebTestCase
      */
     public function it_should_return_answers(): void
     {
-        $this->clientServiceMock->expects($this->once())
-            ->method('request')
-            ->willReturn(['items' => [['answer_id' => 1, 'body' => 'Answer body']]]);
+        $this->service->expects($this->once())
+            ->method('__invoke')
+            ->willReturn([[new AnswerResponse(1, null)]]);
 
-        $this->makeRequest('/api/answers', ['order' => 'desc', 'sort' => 'date', 'site' => 'stackoverflow']);
+        $this->client->request('GET', '/api/answers', ['order' => 'desc', 'sort' => 'creation', 'site' => 'stackoverflow']);
 
-        $this->assertSuccessResponse();
-        $this->assertJsonResponse();
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $this->assertJson($this->client->getResponse()->getContent());
 
         $responseData = json_decode($this->client->getResponse()->getContent(), true);
 
-        $this->assertCount(1, $responseData);
-        $this->assertEquals(1, $responseData[0]['id']);
-        $this->assertEquals('Answer body', $responseData[0]['body']);
+        $this->assertCount(1, $responseData[0]);
+        $this->assertEquals(1, $responseData[0][0]['id']);
+        $this->assertEquals(null, $responseData[0][0]['body']);
     }
 
     /**
@@ -48,11 +53,12 @@ class GetAllAnswersControllerTest extends WebTestCase
      */
     public function it_should_return_assert_exception_when_not_set_site(): void
     {
-        $this->clientServiceMock->expects($this->never())
-            ->method('request');
+        $this->service->expects($this->never())
+            ->method('__invoke');
 
-        $this->makeRequest('/api/answers', ['order' => 'desc', 'sort' => 'date']);
+        $this->client->request('GET', '/api/answers', ['order' => 'desc', 'sort' => 'date']);
 
+        $this->assertJson($this->client->getResponse()->getContent());
         $this->assertBadRequestResponse('<site> can not be empty.');
     }
 
@@ -61,10 +67,11 @@ class GetAllAnswersControllerTest extends WebTestCase
      */
     public function it_should_return_assert_exception_when_not_set_order(): void
     {
-        $this->clientServiceMock->expects($this->never())
-            ->method('request');
+        $this->service->expects($this->never())
+            ->method('__invoke');
 
-        $this->makeRequest('/api/answers', ['sort' => 'date', 'site' => 'stackoverflow']);
+        $this->client->request('GET', '/api/answers', ['sort' => 'date', 'site' => 'stackoverflow']);
+        $this->assertJson($this->client->getResponse()->getContent());
 
         $this->assertBadRequestResponse('<order> can not be empty.');
     }
@@ -74,28 +81,15 @@ class GetAllAnswersControllerTest extends WebTestCase
      */
     public function it_should_return_assert_exception_when_not_set_sort(): void
     {
-        $this->clientServiceMock->expects($this->never())
-            ->method('request');
+        $this->service->expects($this->never())
+            ->method('__invoke');
 
-        $this->makeRequest('/api/answers', ['order' => 'desc', 'site' => 'stackoverflow']);
+        $this->client->request('GET', '/api/answers', ['order' => 'desc', 'site' => 'stackoverflow']);
+        $this->assertJson($this->client->getResponse()->getContent());
 
         $this->assertBadRequestResponse('<sort> can not be empty.');
     }
 
-    private function makeRequest(string $uri, array $parameters): void
-    {
-        $this->client->request('GET', $uri, $parameters);
-    }
-
-    private function assertSuccessResponse(): void
-    {
-        $this->assertResponseIsSuccessful();
-    }
-
-    private function assertJsonResponse(): void
-    {
-        $this->assertJson($this->client->getResponse()->getContent());
-    }
 
     private function assertBadRequestResponse(string $errorMessage): void
     {

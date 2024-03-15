@@ -2,9 +2,8 @@
 
 namespace UI\Http\Rest\Controller\Question;
 
-use App\Question\Application\QuestionResponse;
+use App\Question\Application\SearchQuestionsService;
 use App\Question\Infrastructure\Client\Endpoint\SearchQuestion;
-use App\Shared\Domain\Client\ClientInterface;
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
 use OpenApi\Attributes as OA;
@@ -15,30 +14,30 @@ use Symfony\Component\Routing\Attribute\Route;
 
 readonly class SearchQuestionsController
 {
-    public function __construct(private ClientInterface $client)
+    public function __construct(private SearchQuestionsService $service)
     {
     }
 
     #[Route('/api/questions', name: 'search_questions', methods: ['GET'])]
     #[OA\Get(
-        path: "/api/question",
+        path: "/api/questions",
         summary: "search based by title.",
     )]
     #[OA\Parameter(
         name: 'order',
-        description: 'Specify order (desc, asc)',
+        description: 'Specify order (ex: desc, asc)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
     #[OA\Parameter(
         name: 'sort',
-        description: 'The field used specify order',
+        description: 'The field used specify order (ex: activity)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
     #[OA\Parameter(
         name: 'site',
-        description: 'The specify site of data',
+        description: 'The specify site of data (ex: stackoverflow)',
         in: 'query',
         schema: new OA\Schema(type: 'string')
     )]
@@ -63,16 +62,9 @@ readonly class SearchQuestionsController
             Assertion::notEmpty($title, '<title> can not be empty.');
 
 
-            $result = $this->client->request(new SearchQuestion($order, $sort, $site, $title));
+            $result = $this->service->__invoke(new SearchQuestion($order, $sort, $site, $title));
 
-            $response = array_map(function (array $answer) {
-                return new QuestionResponse(
-                    $answer['question_id'],
-                    $answer['title']
-                );
-            }, $result['items']);
-
-            return new JsonResponse($response, Response::HTTP_OK, []);
+            return new JsonResponse($result, Response::HTTP_OK, []);
         } catch (InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
